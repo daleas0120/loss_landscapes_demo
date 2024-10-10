@@ -10,4 +10,4 @@ dependencies:
   - ipykernel
   - jupyter
   - ipympl
-prefix: /Users/ashley/miniconda/envs/loss_landscapes_demo
+prefix: 
