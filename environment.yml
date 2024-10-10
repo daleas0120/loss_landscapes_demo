@@ -1,0 +1,13 @@
+name: loss_landscapes_demo
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python==3.10
+  - alignn
+  - matplotlib
+  - torchinfo
+  - ipykernel
+  - jupyter
+  - ipympl
+prefix: /Users/ashley/miniconda/envs/loss_landscapes_demo
