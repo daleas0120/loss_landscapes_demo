@@ -21,6 +21,6 @@ The following packages are installed using `conda`:
 - ipympl
 - jupyter
 
-An additional package, `loss_landscapes` is cloned from [this repo](https://github.com/marcellodebernardi/loss-landscapes) as a command in the notebook.
+A patched version of, `loss_landscapes` is included in the repo. The notebook downloads the original package, which has a bug preventing the hessians from being used to make the landscapes.
 
 Any attempt at a `cuda` compatible installation is omitted, and the `dgl` dependency for `alignn` is ignored.
