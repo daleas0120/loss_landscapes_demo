@@ -1,0 +1,22 @@
+name: losslandscapefeb8gpu4
+channels:
+  - pytorch
+  - nvidia
+  - conda-forge
+  - defaults
+  - dglteam/label/cu121
+dependencies:
+  - python=3.10
+  - pip
+  - alignn==2024.8.30
+  - matplotlib
+  - torchinfo
+  - torchdata
+  - ipykernel
+  - jupyter
+  - ipympl
+  - pymatgen
+  - pip:
+    - torchdiffeq
+    - pytorch=2.4
+    - pytorch-cuda=12.1
