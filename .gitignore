@@ -163,4 +163,5 @@ cython_debug/
 
 loss_landscapes/
 loss-landscapes/
+loss_landscapes/*
 *.pt
