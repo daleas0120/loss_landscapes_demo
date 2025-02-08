@@ -2,12 +2,19 @@ name: loss_landscapes_demo
 channels:
   - conda-forge
   - defaults
+  - dglteam/label/th24_cu121
 dependencies:
   - python==3.10
-  - alignn
+  - pip
+  - alignn==2024.8.30
   - matplotlib
   - torchinfo
+  - torchdata
   - ipykernel
   - jupyter
   - ipympl
+  - pymatgen
+  - pip:
+    - torch==2.4
+    - torchdiffeq
 prefix: 

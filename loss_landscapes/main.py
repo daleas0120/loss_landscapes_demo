@@ -225,7 +225,7 @@ def planar_interpolation(model_start: typing.Union[torch.nn.Module, ModelWrapper
         data_matrix.append(data_column)
         start_point.add_(dir_one)
 
-    return np.array(data_matrix)
+    return data_matrix
 
 
 # noinspection DuplicatedCode
