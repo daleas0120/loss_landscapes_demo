@@ -34,9 +34,11 @@ class Loss(Metric):
     def __call__(self, model_wrapper: ModelWrapper) -> float:
         outputs = ()
         pred_outputs = ()
+        device = next(model_wrapper.modules[0].parameters()).device
+
         for i, batch in (enumerate(self.data_loader)):
-            outputs = outputs + tuple([batch[2]])
-            y = model_wrapper.forward((batch[0], batch[1]))
+            outputs = outputs + tuple([batch[2].to(device)])
+            y = model_wrapper.forward((batch[0].to(device), batch[1].to(device)))
             pred_outputs = pred_outputs + tuple([y.expand(1)])
 
         outputs = torch.cat(outputs)
