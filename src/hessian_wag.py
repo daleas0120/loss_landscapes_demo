@@ -172,7 +172,7 @@ def hessian_wag(model_start: typing.Union[torch.nn.Module, ModelWrapper],
     summed_model = wrap_model((copy.deepcopy(model_start)))
     var_model = wrap_model(square_model_wts(copy.deepcopy(model_start)))
     ugly_var_list = []
-    initial_loss = metric(model_start_wrapper)
+    # initial_loss = metric(model_start_wrapper)
     threshold_loss = loss_threshold
     model_ll_coords = []
 
@@ -215,7 +215,7 @@ def hessian_wag(model_start: typing.Union[torch.nn.Module, ModelWrapper],
         averaged_model = unwrap_model(model_start_wrapper)
         stddev_model = unwrap_model(model_start_wrapper)
 
-    return np.array(data_matrix), averaged_model, stddev_model, model_ll_coords
+    return data_matrix, averaged_model, stddev_model, model_ll_coords
 
 
 def get_hessian_wag(dataloader, loss_func, func, STEPS, model_end_one=None, model_end_two=None, loss_threshold=1.0):
