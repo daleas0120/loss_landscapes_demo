@@ -158,8 +158,17 @@ def hessian_wag(model_start: typing.Union[torch.nn.Module, ModelWrapper],
 
     # compute direction vectors
     start_point = model_start_wrapper.get_module_parameters()
-    dir_one = (model_end_one_wrapper.get_module_parameters() - start_point) / steps
-    dir_two = (model_end_two_wrapper.get_module_parameters() - start_point) / steps
+    dir_one = (model_end_one_wrapper.get_module_parameters()) / steps
+    dir_two = (model_end_two_wrapper.get_module_parameters()) / steps
+
+
+    # Move start point so that original start params will be in the center of the plot
+    dir_one.mul_(steps / 2)
+    dir_two.mul_(steps / 2)
+    start_point.sub_(dir_one)
+    start_point.sub_(dir_two)
+    dir_one.truediv_(steps / 2)
+    dir_two.truediv_(steps / 2)
 
     data_matrix = []
     # evaluate loss in grid of (steps * steps) points, where each column signifies one step
