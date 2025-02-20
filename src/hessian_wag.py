@@ -275,7 +275,7 @@ def hessian_wag(model_start: typing.Union[torch.nn.Module, ModelWrapper],
     return data_matrix, averaged_model, stddev_model, model_ll_coords
 
 
-def get_hessian_wag(dataloader, loss_func, func, STEPS, model_end_one=None, model_end_two=None, loss_threshold=1.0):
+'''def get_hessian_wag(dataloader, loss_func, func, STEPS, model_end_one=None, model_end_two=None, loss_threshold=1.0):
 
     if (model_end_one == None) and (model_end_two == None):
         model_end_one, model_end_two = get_hessians(func, dataloader, model_wt_dict, loss_func)
@@ -295,6 +295,6 @@ def get_hessian_wag(dataloader, loss_func, func, STEPS, model_end_one=None, mode
     except Exception as e:
         print(e+'batch id: '+str(i))
         return None, None, None
-    # std_loss_landscape = np.std(tmp, axis=2)
+    # std_loss_landscape = np.std(tmp, axis=2)'''
 
     
