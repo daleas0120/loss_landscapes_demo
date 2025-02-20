@@ -34,9 +34,11 @@ class Loss(Metric):
     def __call__(self, model_wrapper: ModelWrapper) -> float:
         outputs = ()
         pred_outputs = ()
+        device = next(model_wrapper.modules[0].parameters()).device
+
         for i, batch in (enumerate(self.data_loader)):
-            outputs = outputs + tuple([batch[2]])
-            y = model_wrapper.forward((batch[0], batch[1]))
+            outputs = outputs + tuple([batch[2].to(device)])
+            y = model_wrapper.forward((batch[0].to(device), batch[1].to(device)))
             pred_outputs = pred_outputs + tuple([y.expand(1)])
 
         outputs = torch.cat(outputs)
@@ -156,8 +158,17 @@ def hessian_wag(model_start: typing.Union[torch.nn.Module, ModelWrapper],
 
     # compute direction vectors
     start_point = model_start_wrapper.get_module_parameters()
-    dir_one = (model_end_one_wrapper.get_module_parameters() - start_point) / steps
-    dir_two = (model_end_two_wrapper.get_module_parameters() - start_point) / steps
+    dir_one = (model_end_one_wrapper.get_module_parameters()) / steps
+    dir_two = (model_end_two_wrapper.get_module_parameters()) / steps
+
+
+    # Move start point so that original start params will be in the center of the plot
+    dir_one.mul_(steps / 2)
+    dir_two.mul_(steps / 2)
+    start_point.sub_(dir_one)
+    start_point.sub_(dir_two)
+    dir_one.truediv_(steps / 2)
+    dir_two.truediv_(steps / 2)
 
     data_matrix = []
     # evaluate loss in grid of (steps * steps) points, where each column signifies one step
@@ -170,7 +181,7 @@ def hessian_wag(model_start: typing.Union[torch.nn.Module, ModelWrapper],
     summed_model = wrap_model((copy.deepcopy(model_start)))
     var_model = wrap_model(square_model_wts(copy.deepcopy(model_start)))
     ugly_var_list = []
-    initial_loss = metric(model_start_wrapper)
+    # initial_loss = metric(model_start_wrapper)
     threshold_loss = loss_threshold
     model_ll_coords = []
 
@@ -213,7 +224,7 @@ def hessian_wag(model_start: typing.Union[torch.nn.Module, ModelWrapper],
         averaged_model = unwrap_model(model_start_wrapper)
         stddev_model = unwrap_model(model_start_wrapper)
 
-    return np.array(data_matrix), averaged_model, stddev_model, model_ll_coords
+    return data_matrix, averaged_model, stddev_model, model_ll_coords
 
 
 def get_hessian_wag(dataloader, loss_func, func, STEPS, model_end_one=None, model_end_two=None, loss_threshold=1.0):
