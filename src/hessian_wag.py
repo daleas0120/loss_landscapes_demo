@@ -13,7 +13,7 @@ from loss_landscapes.metrics.metric import Metric
 
 from src.utils import get_hessians
 
-class Metric(ABC):
+'''class Metric(ABC):
     """ A quantity that can be computed given a model or an agent. """
 
     def __init__(self):
@@ -46,6 +46,20 @@ class Loss(Metric):
         
         err = self.loss_fn(pred_outputs, outputs)
         return err
+'''
+
+## Yao Fehlis
+def check_nan_in_model(model):
+    """
+    Checks if any parameter in the model contains NaN values.
+    """
+    for name, param in model.named_parameters():
+        if torch.isnan(param).any():  # Check if any NaN exists in the tensor
+            print(f"⚠️ NaN detected in {name}")
+            return True  # Stop at first NaN detection
+    print("✅ No NaN values found in model parameters.")
+    return False  # No NaN found
+
 
 def get_sample_from_normal_dist_of_models(model_mu, model_std, og_model):
     new_model = copy.deepcopy(og_model)
@@ -68,16 +82,35 @@ def square_model_wts(model):
     squared_model.load_state_dict(updated_model_state_dict, strict=False)
     return squared_model
 
+## Yao Fehlis
 def sqrt_model_wts(model):
-    ### This is going to throw an error for any negative values
-    ### that return a nan
+    """
+    Computes the square root of each layer in the model while checking for NaN values.
+    
+    - If a layer contains NaN values, it prints a warning.
+    - If a layer has negative values, it skips that layer.
+    - Returns a model with square-rooted weights.
+    """
     updated_model_state_dict = {}
-    sqrt_model = copy.deepcopy(model)
-    for layer_name in model.state_dict().keys():
-        layer_wts = model.state_dict()[layer_name]
-        layer_wts = torch.sqrt(layer_wts)
-        updated_model_state_dict[layer_name] = layer_wts
+    sqrt_model = copy.deepcopy(model)  # Deep copy to avoid modifying original model
+
+    for layer_name, layer_wts in model.state_dict().items():
+        if torch.isnan(layer_wts).any():
+            print(f"⚠️ Warning: NaN detected in {layer_name}, skipping this layer.")
+            updated_model_state_dict[layer_name] = layer_wts  # Keep original weights
+            continue
+        
+        if (layer_wts < 0).any():
+            print(f"⚠️ Warning: Negative values in {layer_name}, skipping sqrt computation.")
+            updated_model_state_dict[layer_name] = layer_wts  # Keep original weights
+            continue
+        
+        # Compute the square root safely
+        updated_model_state_dict[layer_name] = torch.sqrt(layer_wts)
+
+    # Load the modified state_dict into the copied model
     sqrt_model.load_state_dict(updated_model_state_dict, strict=False)
+    
     return sqrt_model
 
 def unwrap_model(wrapped_model):
@@ -107,10 +140,15 @@ def get_scaled_model(model, scalar: float):
 def add_eps_to_model_wts(model):
     eps_model = copy.deepcopy(model)
     updated_model_state_dict = {}
+    print("******** Before addding episilon")
+    check_nan_in_model(eps_model)
+    
     for layer_name in model.state_dict().keys():
         layer_wts = model.state_dict()[layer_name]
         updated_model_state_dict[layer_name] = torch.add(layer_wts, 1E-6)
     eps_model.load_state_dict(updated_model_state_dict, strict=False)
+    print("******** After addding episilon")
+    check_nan_in_model(eps_model)
     return eps_model
 
 
@@ -118,6 +156,10 @@ def get_stddev_model(mu_model, var_model, n_samples):
     stddev_model = copy.deepcopy(mu_model)
     updated_model_state_dict = {}
     theta_SWA = square_model_wts(add_eps_to_model_wts(mu_model))
+
+    print("*********** theta_SWA")
+    check_nan_in_model(theta_SWA)
+
     theta_bar = get_normed_model(get_scaled_model(square_model_wts(var_model), n_samples), n_samples - 1.0)
 
     for layer_name in theta_SWA.state_dict().keys():
@@ -129,6 +171,12 @@ def get_stddev_model(mu_model, var_model, n_samples):
             bp = 0
         updated_model_state_dict[layer_name] = torch.sub(bar, mu_SWA)
     stddev_model.load_state_dict(updated_model_state_dict, strict=False)
+    print("*********** stddev_model")
+    check_nan_in_model(stddev_model)
+
+    print("*********** sqrt_model_wts(stddev_model)")
+    check_nan_in_model(sqrt_model_wts(stddev_model))
+
     return sqrt_model_wts(stddev_model)
 
 
