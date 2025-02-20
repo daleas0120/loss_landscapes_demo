@@ -57,7 +57,7 @@ def check_nan_in_model(model):
         if torch.isnan(param).any():  # Check if any NaN exists in the tensor
             print(f"⚠️ NaN detected in {name}")
             return True  # Stop at first NaN detection
-    print("✅ No NaN values found in model parameters.")
+    #print("✅ No NaN values found in model parameters.")
     return False  # No NaN found
 
 
@@ -140,15 +140,11 @@ def get_scaled_model(model, scalar: float):
 def add_eps_to_model_wts(model):
     eps_model = copy.deepcopy(model)
     updated_model_state_dict = {}
-    print("******** Before addding episilon")
-    check_nan_in_model(eps_model)
     
     for layer_name in model.state_dict().keys():
         layer_wts = model.state_dict()[layer_name]
         updated_model_state_dict[layer_name] = torch.add(layer_wts, 1E-6)
     eps_model.load_state_dict(updated_model_state_dict, strict=False)
-    print("******** After addding episilon")
-    check_nan_in_model(eps_model)
     return eps_model
 
 
@@ -156,10 +152,6 @@ def get_stddev_model(mu_model, var_model, n_samples):
     stddev_model = copy.deepcopy(mu_model)
     updated_model_state_dict = {}
     theta_SWA = square_model_wts(add_eps_to_model_wts(mu_model))
-
-    print("*********** theta_SWA")
-    check_nan_in_model(theta_SWA)
-
     theta_bar = get_normed_model(get_scaled_model(square_model_wts(var_model), n_samples), n_samples - 1.0)
 
     for layer_name in theta_SWA.state_dict().keys():
@@ -171,11 +163,6 @@ def get_stddev_model(mu_model, var_model, n_samples):
             bp = 0
         updated_model_state_dict[layer_name] = torch.sub(bar, mu_SWA)
     stddev_model.load_state_dict(updated_model_state_dict, strict=False)
-    print("*********** stddev_model")
-    check_nan_in_model(stddev_model)
-
-    print("*********** sqrt_model_wts(stddev_model)")
-    check_nan_in_model(sqrt_model_wts(stddev_model))
 
     return sqrt_model_wts(stddev_model)
 
