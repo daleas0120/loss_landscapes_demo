@@ -143,7 +143,10 @@ def add_eps_to_model_wts(model):
     
     for layer_name in model.state_dict().keys():
         layer_wts = model.state_dict()[layer_name]
-        updated_model_state_dict[layer_name] = torch.add(layer_wts, 1E-6)
+        # Yao Fehlis
+        epsilon = torch.min(layer_wts) #1 #1E-6
+        #print("*******layer weights are ", layer_wts)
+        updated_model_state_dict[layer_name] = torch.add(layer_wts, epsilon)
     eps_model.load_state_dict(updated_model_state_dict, strict=False)
     return eps_model
 
