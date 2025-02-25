@@ -14,9 +14,11 @@ if __name__ == "__main__":
     # Extract training parameters
     test_size = config["training"]["test_size"]
 
+
     # Extract data paths
     raw_data_dir = config["data"]["raw_data_dir"]
     clustered_data_path = config["data"]["clustered_data_path"]
+    dbscan_clustering_plot_path = config["data"]["dbscan_clustering_plot_path"]
 
     # Extract clustering parameters
     pca_n_components = config["clustering"]["pca_n_components"]
@@ -24,8 +26,6 @@ if __name__ == "__main__":
     dbscan_min_samples = config["clustering"]["dbscan_min_samples"]
 
     # Extract model parameters
-    model_arch = config["model"]["architecture"]
-    num_classes = config["model"]["num_classes"]
     model_save_path = config["model"]["save_path"]
 
     print(f"Model will be saved to: {model_save_path}")
@@ -51,6 +51,8 @@ if __name__ == "__main__":
     min_samples = dbscan_min_samples  
     dbscan = DBSCAN(eps=epsilon, min_samples=min_samples)
     clusters = dbscan.fit_predict(transformed_data)
+
+    utils_2.plot_dbscan_clustering_results(transformed_data, clusters, save_path=dbscan_clustering_plot_path)
 
     utils_2.save_dataframe(clustered_data_path, 
                            smiles=smiles_list, 
