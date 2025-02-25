@@ -26,5 +26,5 @@ An additional package, `loss_landscapes` is cloned from [this repo](https://gith
 
 Any attempt at a `cuda` compatible installation is omitted, and the `dgl` dependency for `alignn` is ignored.
 
-# yaofehlis
-If I get an error, it may be CUDA installation related. 
+# Notes from Yao Fehlis
+
