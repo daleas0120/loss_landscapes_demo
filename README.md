@@ -28,3 +28,10 @@ Any attempt at a `cuda` compatible installation is omitted, and the `dgl` depend
 
 # Notes from Yao Fehlis
 
+# Machine Learning Project Repository
+
+This repository contains the implementation of a machine learning pipeline, including training, prediction, and Hessian calculation. The project is structured for modularity and ease of use.
+
+## 📂 Folder Structure
+
+project_root/ │── configs/ # Configuration files (YAML format) │ ├── train_config.yaml # Training configuration parameters  │── data/ # Dataset storage │ ├── raw/ # Raw input data │ ├── processed/ # Preprocessed data  │ ├── figures/  │ ├── results/ # Model outputs and results │── models/ # Saved trained models │── src/ # Source code │ ├── scripts/ # User-run scripts │ │ ├── train.py # Training script │ │ ├── predict.py # Prediction script │ │ ├── ... │ ├── utils/ # Supporting functions │ │ ├── utils_2.py # Yao Fehlis's utils which is separate than Ashley's utils │ │ ├── model.py # Model architecture definition │ │ ├── ... │── notebooks/ # Jupyter notebooks for analysis and experiments │── requirements.txt # Python dependencies │── README.md # Project documentation (this file)
