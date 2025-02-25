@@ -1,0 +1,25 @@
+training:
+  test_size: 0.2
+  batch_size: 32
+  learning_rate: 0.001
+  epochs: 50
+  optimizer: "adam"
+
+data:
+  raw_data_dir: "data/raw"
+  clustered_data_path: "data/processed/clustered.csv"
+  train_path: "data/processed/train.csv"
+  val_path: "data/processed/val.csv"
+
+clustering:
+  pca_n_components: 2
+  dbscan_epsilon: 0.5  # Chosen based on k-distance graph
+  dbscan_min_samples: 26 # DBSCAN parameters are chosen after trial and error
+
+
+
+
+model:
+  architecture: "resnet50"
+  num_classes: 10
+  save_path: "models/model.pth"
