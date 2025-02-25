@@ -3,9 +3,7 @@ training:
   train_size: 0.9
   validation_size_within_train: 0.1
   batch_size: 32
-  learning_rate: 0.001
   epochs: 100
-  optimizer: "adam"
 
 data:
   raw_data_dir: "data/raw"
@@ -15,16 +13,15 @@ data:
   dbscan_clustering_plot_path: "data/figures/dbscan_clustering.png"
   bayesian_opt_progress_path: "data/figures/bayesian_opt_progress.png"
   bayesian_opt_best_parameters_path: "data/processed/bayesian_opt_best_parameters.json"
+  in_prediction_path = "data/figures/in_prediction.png"
+  ood_prediction_path = "data/figures/ood_prediction.png"
 
 clustering:
   pca_n_components: 2
   dbscan_epsilon: 0.5  # Chosen based on k-distance graph
   dbscan_min_samples: 26 # DBSCAN parameters are chosen after trial and error
 
-
 model:
-  architecture: "resnet50"
-  num_classes: 10
   save_path: "models/model.pth"
   device: "cpu"
 

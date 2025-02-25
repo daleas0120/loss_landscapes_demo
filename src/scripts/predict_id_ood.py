@@ -33,6 +33,8 @@ if __name__ == "__main__":
     raw_data_dir = config["data"]["raw_data_dir"]
     clustered_data_path = config["data"]["clustered_data_path"]
     bayesian_opt_best_parameters_path = config["data"]["bayesian_opt_best_parameters_path"]
+    in_prediction_path = config["data"]["in_prediction_path"]
+    ood_prediction_path = config["data"]["ood_prediction_path"]
 
     # Extract model parameters
     model_save_path = config["model"]["save_path"]
@@ -80,4 +82,19 @@ if __name__ == "__main__":
     loaded_model.eval()
     print("Model loaded successfully.")
 
-    
+    ################ In Distribution Prediction ################
+    r2, y_true_id, y_pred_id = utils_2.compute_r2(loaded_model, test_loader, device)
+    print(f"In Distribution Test Data R^2 Score: {r2:.4f}")
+    utils_2.plot_results(y_true_id, y_pred_id, title="In Distribution Prediction", save_path=in_prediction_path)
+    ################ Out of Distribution Prediction ################
+    # Extract features and targets
+    temp_OOD_X = [ast.literal_eval(a) for a in df[df['clusters']==-1]['fingerprints']]
+    X_test_OOD = np.array([a for a in temp_OOD_X])
+
+    y_test_OOD = np.asarray(df[df['clusters']==-1]['targets'], dtype=np.float32)
+    test_OOD_dataset = utils_2.ESOLDataset(X_test_OOD, y_test_OOD)
+    test_OOD_loader = DataLoader(test_OOD_dataset, batch_size=batch_size, shuffle=False)
+
+    r2_ood, y_true_ood, y_pred_ood = utils_2.compute_r2(loaded_model, test_OOD_loader, device)
+    print(f"Out of Distribution Test Data R^2 Score: {r2_ood:.4f}")
+    utils_2.plot_results(y_true_ood, y_pred_ood, title="Out of Distribution Prediction", save_path=ood_prediction_path)
