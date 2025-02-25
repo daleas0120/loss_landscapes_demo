@@ -14,6 +14,7 @@ data:
   val_path: "data/processed/val.csv"
   dbscan_clustering_plot_path: "data/figures/dbscan_clustering.png"
   bayesian_opt_progress_path: "data/figures/bayesian_opt_progress.png"
+  bayesian_opt_best_parameters_path: "data/processed/bayesian_opt_best_parameters.json"
 
 clustering:
   pca_n_components: 2
@@ -25,6 +26,7 @@ model:
   architecture: "resnet50"
   num_classes: 10
   save_path: "models/model.pth"
+  device: "cpu"
 
 bayesian_optimization:
   hidden_dim: 

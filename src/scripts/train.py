@@ -19,7 +19,7 @@ from src.lib import utils_2
 from src.lib.model import BoostingRegressor
 
 # Bayesian Optimization Function
-def train_and_evaluate(hidden_dim, num_layers, dropout_rate, lr):
+def train_and_evaluate_bayesian_opt(hidden_dim, num_layers, dropout_rate, lr):
     hidden_dim = int(hidden_dim)
     num_layers = int(num_layers)
     dropout_rate = float(dropout_rate)
@@ -29,7 +29,7 @@ def train_and_evaluate(hidden_dim, num_layers, dropout_rate, lr):
     criterion = nn.MSELoss()
     optimizer = optim.Adam(model.parameters(), lr=lr, weight_decay=1e-5)
     
-    for epoch in range(100):
+    for epoch in range(epochs):
         model.train()
         epoch_loss = 0.0
         for batch_X, batch_y in train_loader:
@@ -55,6 +55,29 @@ def train_and_evaluate(hidden_dim, num_layers, dropout_rate, lr):
     #return -mse  # Negative for maximization
     return r2
 
+
+def train(hidden_dim, num_layers, dropout_rate, lr):
+    hidden_dim = int(hidden_dim)
+    num_layers = int(num_layers)
+    dropout_rate = float(dropout_rate)
+    lr = float(lr)
+    
+    model = BoostingRegressor(input_dim=X_train.shape[1], hidden_dim=hidden_dim, num_layers=num_layers, dropout_rate=dropout_rate)
+    criterion = nn.MSELoss()
+    optimizer = optim.Adam(model.parameters(), lr=lr, weight_decay=1e-5)
+    
+    for epoch in range(epochs):
+        model.train()
+        epoch_loss = 0.0
+        for batch_X, batch_y in train_loader:
+            optimizer.zero_grad()
+            outputs = model(batch_X)
+            loss = criterion(outputs, batch_y)
+            loss.backward()
+            optimizer.step()
+            epoch_loss += loss.item()
+    return model
+
 if __name__ == "__main__":
     config = utils_2.load_config("configs/train_config.yaml")
 
@@ -68,6 +91,7 @@ if __name__ == "__main__":
     raw_data_dir = config["data"]["raw_data_dir"]
     clustered_data_path = config["data"]["clustered_data_path"]
     bayesian_opt_progress_path = config["data"]["bayesian_opt_progress_path"]
+    bayesian_opt_best_parameters_path = config["data"]["bayesian_opt_best_parameters_path"]
 
     # Extract Bayesian Optimization parameters
     bayesian_params = config["bayesian_optimization"]
@@ -106,7 +130,7 @@ if __name__ == "__main__":
     validation_loader = DataLoader(validation_dataset, batch_size=batch_size, shuffle=False)
     test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
 
-    # Bayesian Optimization to find the best model parameters
+    ############################ Bayesian Optimization to find the best model parameters #########################
     # Define Bayesian Optimization Parameters
     pbounds = {
         'hidden_dim': (bayesian_params['hidden_dim']['min'], bayesian_params['hidden_dim']['max']),
@@ -116,7 +140,7 @@ if __name__ == "__main__":
     }
 
     optimizer = BayesianOptimization(
-        f=train_and_evaluate,
+        f=train_and_evaluate_bayesian_opt,
         pbounds=pbounds,
         random_state=42,
     )
@@ -125,6 +149,18 @@ if __name__ == "__main__":
 
     best_params = optimizer.max['params']
     print("Best Parameters Found:", best_params)
+    utils_2.save_json_object(best_params, bayesian_opt_best_parameters_path)
 
     # Visualization of Bayesian Optimization Progress
     utils_2.plot_bayesian_optimization_progress(optimizer.res, save_path=bayesian_opt_progress_path)
+
+    ################################################################################################################
+    # Train model using the best model parameters found through Bayesian Optimization
+    model_trained = train(hidden_dim=best_params["hidden_dim"],
+                num_layers=best_params["num_layers"],
+                dropout_rate=best_params["dropout_rate"],
+                lr = best_params["lr"])
+    
+    # Save the trained model
+    torch.save(model_trained.state_dict(), model_save_path)
+    print(f"Model saved in : {model_save_path}")
