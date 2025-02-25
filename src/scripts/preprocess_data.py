@@ -12,7 +12,7 @@ if __name__ == "__main__":
     config = utils_2.load_config("configs/train_config.yaml")
 
     # Extract training parameters
-    test_size = config["training"]["test_size"]
+    test_size_for_clustering = config["training"]["test_size_for_clustering"]
 
 
     # Extract data paths
@@ -39,7 +39,7 @@ if __name__ == "__main__":
     targets = np.array([data.y.item() for data in dataset])
 
     # Split data
-    X_train, X_test, y_train, y_test = train_test_split(fingerprints, targets, test_size=test_size, random_state=42)
+    X_train, X_test, y_train, y_test = train_test_split(fingerprints, targets, test_size=test_size_for_clustering, random_state=42)
 
     # PCA
     pca = PCA(n_components=pca_n_components)

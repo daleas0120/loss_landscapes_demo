@@ -1,5 +1,6 @@
 training:
-  test_size: 0.2
+  test_size_for_clustering: 0.2
+  train_size: 0.9
   validation_size_within_train: 0.1
   batch_size: 32
   learning_rate: 0.001

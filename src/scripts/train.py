@@ -59,7 +59,7 @@ if __name__ == "__main__":
     config = utils_2.load_config("configs/train_config.yaml")
 
     # Extract training parameters
-    test_size = config["training"]["test_size"]
+    train_size = config["training"]["train_size"]
     validation_size_within_train = config["training"]["validation_size_within_train"]
     batch_size = config["training"]["batch_size"]
     epochs = config["training"]["epochs"]
@@ -89,11 +89,13 @@ if __name__ == "__main__":
 
     X_train, X_test_ID, y_train, y_test_ID  = train_test_split(fingerprints, 
                                                                targets, 
-                                                               train_size=validation_size_within_train, 
+                                                               train_size=train_size, 
                                                                random_state=42)
 
     # Split the training set into training and validation sets
     X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=validation_size_within_train, random_state=42) 
+
+    print(y_train.shape, y_val.shape, y_test_ID.shape)
 
     # Create DataLoader instances
     train_dataset = utils_2.ESOLDataset(X_train, y_train)
