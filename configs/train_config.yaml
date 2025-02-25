@@ -40,3 +40,15 @@ bayesian_optimization:
     max: 0.01
   init_points: 5
   n_iter: 15
+
+hessian:
+  model_eig_max_path: "models/model_eig_max.pt"
+  model_eig_min_path: "models/model_eig_min.pt"
+  trained_data_loss_landscape_path: "data/figures/trained_data_loss_landscape_path.png"
+  test_id_data_loss_landscape_path: "data/figures/test_id_data_loss_landscape_path.png"
+  test_ood_data_loss_landscape_path: "data/figures/test_ood_data_loss_landscape_path.png"
+  test_id_ood_diff_loss_landscape_path: "data/figures/test_id_ood_diff_loss_landscape_path.png"
+
+loss_landscape:
+  distance: 0.3
+  steps: 40

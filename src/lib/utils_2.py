@@ -161,3 +161,41 @@ def compute_r2(model, dataloader, device):
     
     # Compute R^2 score
     return r2_score(y_true, y_pred), y_true, y_pred
+
+def plot_loss_contours(average_array, title, vmin=None, vmax=None, scale="linear", save_path=None):
+    import matplotlib.colors as mcolors
+
+    fig, ax = plt.subplots(1, 1)
+
+    log_data = np.log10(average_array)
+
+    if vmin is None:
+        vmin = np.min(log_data)
+    if vmax is None:
+        vmax = np.max(log_data)
+
+    levels = np.linspace(vmin, vmax, 50)
+
+    # Choose scaling method
+    if scale == "log":
+        norm = mcolors.LogNorm(vmin=vmin, vmax=vmax)
+    else:  # Default to linear scale
+        norm = mcolors.Normalize(vmin=vmin, vmax=vmax)
+
+    # Contour plot with chosen normalization
+    contour = ax.contourf(log_data, levels=levels, cmap='jet', norm=norm, extend='both')
+
+    plt.title(title)
+    ax.axis('square')
+    ax.set_xlabel(r'$\alpha$')
+    ax.set_ylabel(r'$\beta$')
+
+    # Add colorbar
+    cbar = plt.colorbar(contour)
+    cbar.set_label(f"Log10 Loss ({scale} scale)")
+
+    if save_path:
+        plt.savefig(save_path)
+        print(f"Plot saved to {save_path}")
+    else:
+        plt.show()
