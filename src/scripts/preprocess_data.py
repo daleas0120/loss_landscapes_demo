@@ -1,20 +1,8 @@
 # Preprocess data for ESOl dataset and create cluster labels
-import torch
-import torch.nn as nn
-import torch.optim as optim
-from torch.utils.data import Dataset, DataLoader
-from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch_geometric.datasets import MoleculeNet
 import numpy as np
-import pandas as pd
-from rdkit import Chem
-from rdkit.Chem.rdFingerprintGenerator import GetMorganGenerator
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import mean_squared_error, r2_score
-from bayes_opt import BayesianOptimization
-import matplotlib.pyplot as plt
 from sklearn.cluster import DBSCAN
-from sklearn.neighbors import NearestNeighbors
 from sklearn.decomposition import PCA
 
 from src.lib import utils_2
@@ -25,16 +13,10 @@ if __name__ == "__main__":
 
     # Extract training parameters
     test_size = config["training"]["test_size"]
-    batch_size = config["training"]["batch_size"]
-    learning_rate = config["training"]["learning_rate"]
-    epochs = config["training"]["epochs"]
-    optimizer_type = config["training"]["optimizer"]
 
     # Extract data paths
     raw_data_dir = config["data"]["raw_data_dir"]
     clustered_data_path = config["data"]["clustered_data_path"]
-    train_path = config["data"]["train_path"]
-    val_path = config["data"]["val_path"]
 
     # Extract clustering parameters
     pca_n_components = config["clustering"]["pca_n_components"]
@@ -46,11 +28,7 @@ if __name__ == "__main__":
     num_classes = config["model"]["num_classes"]
     model_save_path = config["model"]["save_path"]
 
-    # Print loaded config (for debugging)
-    print(f"Training {model_arch} for {epochs} epochs with {optimizer_type} optimizer.")
-    print(f"Train data: {train_path}, Validation data: {val_path}")
     print(f"Model will be saved to: {model_save_path}")
-
 
     # Load ESOL dataset
     dataset = MoleculeNet(root=raw_data_dir, name="ESOL")
