@@ -59,6 +59,10 @@ project_root/
 
 ## Steps to run the user-run scripts: refer to config yaml file for data locations
 
+#### Install dependencies inside of loss_landscape conda environment
+```
+pip install -r requirements.txt
+```
 #### Preprocess data: generate cluster labels
 ```
 python -m src.scripts.preprocess_data
