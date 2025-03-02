@@ -76,6 +76,8 @@ def plot_model_wt_dist(model):
     model_wts = []
     model_biases = []
     for i in model.state_dict().keys():
+        if i.split('.')[-1] == 'num_batches_tracked':
+            continue
         # print(i[0])
         values = model.state_dict()[i].detach().numpy().flatten()
         if np.ndim(values) == 0:
@@ -94,11 +96,13 @@ def plot_model_wt_dist(model):
     ax[0].set_title('Weights')
     ax[0].set_xlabel('Value')
     ax[0].set_ylabel('Count')
+    ax[0].set_yscale('log')
 
     ax[1].hist(b_bins[1:], b_bins[1:], weights=b_ct)
     ax[1].set_title('Biases')
     ax[1].set_xlabel('Value')
     ax[1].set_ylabel('Count')
+    ax[1].set_yscale('log') 
     plt.tight_layout()
     plt.show()
 
