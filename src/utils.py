@@ -85,6 +85,8 @@ def plot_model_wt_dist(model):
             model_wts.extend(list(values))
         else:
             model_biases.extend(list(values))
+
+    
     
     wt_ct, wt_bins = np.histogram([model_wts], bins=25)
     b_ct, b_bins = np.histogram([model_biases], bins=25)

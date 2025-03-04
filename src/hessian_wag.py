@@ -62,6 +62,8 @@ def square_model_wts(model):
     updated_model_state_dict = {}
     for layer_name in model.state_dict().keys():
         layer_wts = model.state_dict()[layer_name]
+        if torch.any(torch.square(layer_wts) < 0):
+            print('Issue with squaring weights')
         updated_model_state_dict[layer_name] = torch.square(layer_wts)
     squared_model.load_state_dict(updated_model_state_dict, strict=False)
     return squared_model
@@ -87,12 +89,15 @@ def get_normed_model(model, n_summations):
     updated_model_state_dict = {}
     for layer_name in model.state_dict().keys():
         layer_wts = model.state_dict()[layer_name]
+        if torch.any(layer_wts/n_summations < 0):
+            print('get normed model issue')
         updated_model_state_dict[layer_name] = layer_wts / n_summations
 
     normed_model.load_state_dict(updated_model_state_dict, strict=False)
     return normed_model
 
 def get_scaled_model(model, scalar: float):
+    print('scalar for scaled model: ', scalar)
     scaled_model = copy.deepcopy(model)
     updated_model_state_dict = {}
     for layer_name in model.state_dict().keys():
@@ -102,12 +107,16 @@ def get_scaled_model(model, scalar: float):
     scaled_model.load_state_dict(updated_model_state_dict, strict=False)
     return scaled_model
 
-def add_eps_to_model_wts(model):
+def add_eps_to_model_wts(model, eps=1E-6):
     eps_model = copy.deepcopy(model)
     updated_model_state_dict = {}
     for layer_name in model.state_dict().keys():
         layer_wts = model.state_dict()[layer_name]
-        updated_model_state_dict[layer_name] = torch.add(layer_wts, 1E-6)
+        wts_plus_eps = torch.add(layer_wts, eps)
+        # if torch.any(wts_plus_eps < 0):
+        #     print(wts_plus_eps)
+        updated_model_state_dict[layer_name] = wts_plus_eps
+
     eps_model.load_state_dict(updated_model_state_dict, strict=False)
     return eps_model
 
@@ -115,7 +124,7 @@ def add_eps_to_model_wts(model):
 def get_stddev_model(mu_model, var_model, n_samples):
     stddev_model = copy.deepcopy(mu_model)
     updated_model_state_dict = {}
-    theta_SWA = square_model_wts(add_eps_to_model_wts(mu_model))
+    theta_SWA = square_model_wts(add_eps_to_model_wts(mu_model, eps=1E-6))
     theta_bar = get_normed_model(get_scaled_model(square_model_wts(var_model), n_samples), n_samples - 1.0)
 
     for layer_name in theta_SWA.state_dict().keys():
@@ -124,7 +133,8 @@ def get_stddev_model(mu_model, var_model, n_samples):
         bar = theta_bar.state_dict()[layer_name]
         tmp = torch.sub(bar, mu_SWA)
         if torch.any(tmp < 0):
-            bp = 0
+            print('layer_name ', layer_name, 'has negative value')
+
         updated_model_state_dict[layer_name] = torch.sub(bar, mu_SWA)
     stddev_model.load_state_dict(updated_model_state_dict, strict=False)
     return sqrt_model_wts(stddev_model)
