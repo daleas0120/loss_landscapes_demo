@@ -158,7 +158,7 @@ def random_line(model_start: typing.Union[torch.nn.Module, ModelWrapper], metric
 def planar_interpolation(model_start: typing.Union[torch.nn.Module, ModelWrapper],
                          model_end_one: typing.Union[torch.nn.Module, ModelWrapper],
                          model_end_two: typing.Union[torch.nn.Module, ModelWrapper],
-                         metric: Metric, steps=20, deepcopy_model=False) -> np.ndarray:
+                         metric: Metric, steps=20, deepcopy_model=False, eig_vec=True) -> np.ndarray:
     """
     Returns the computed value of the evaluation function applied to the model or agent along
     a planar subspace of the parameter space defined by a start point and two end points.
@@ -201,8 +201,21 @@ def planar_interpolation(model_start: typing.Union[torch.nn.Module, ModelWrapper
 
     # compute direction vectors
     start_point = model_start_wrapper.get_module_parameters()
-    dir_one = (model_end_one_wrapper.get_module_parameters() - start_point) / steps
-    dir_two = (model_end_two_wrapper.get_module_parameters() - start_point) / steps
+    if eig_vec:
+        dir_one = (model_end_one_wrapper.get_module_parameters()) / steps
+        dir_two = (model_end_two_wrapper.get_module_parameters()) / steps
+    else:
+        dir_one = (model_end_one_wrapper.get_module_parameters() - start_point) / steps
+        dir_two = (model_end_two_wrapper.get_module_parameters() - start_point) / steps
+
+    # Move start point so that original start params will be in the center of the plot
+    dir_one.mul_(steps / 2)
+    dir_two.mul_(steps / 2)
+    start_point.sub_(dir_one)
+    start_point.sub_(dir_two)
+    dir_one.truediv_(steps / 2)
+    dir_two.truediv_(steps / 2)
+
 
     data_matrix = []
     # evaluate loss in grid of (steps * steps) points, where each column signifies one step
@@ -225,7 +238,7 @@ def planar_interpolation(model_start: typing.Union[torch.nn.Module, ModelWrapper
         data_matrix.append(data_column)
         start_point.add_(dir_one)
 
-    return np.array(data_matrix)
+    return data_matrix
 
 
 # noinspection DuplicatedCode
