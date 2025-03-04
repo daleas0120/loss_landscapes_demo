@@ -166,3 +166,5 @@ loss-landscapes/
 loss_landscapes/*
 *.pt
 *.pyc
+.*
+dataset_data_range
