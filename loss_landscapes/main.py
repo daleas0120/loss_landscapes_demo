@@ -313,6 +313,50 @@ def planar_interpolation_v3(model_start: typing.Union[torch.nn.Module, ModelWrap
 
     return data_matrix
 
+def planar_interpolation_v4(model_start: typing.Union[torch.nn.Module, ModelWrapper],
+                         model_end_one: typing.Union[torch.nn.Module, ModelWrapper],
+                         model_end_two: typing.Union[torch.nn.Module, ModelWrapper],
+                         metric: Metric, steps=20, deepcopy_model=False) -> np.ndarray:
+    """
+   modified by changing:
+    1. the way steps are tracked, so now the loss landscape calculation domain is a sqaure with a vertex being the starting point, matching the function's description
+    2. directions are now specified by model_end_one_wrapper.get_module_parameters() instead of (model_end_one_wrapper.get_module_parameters() - start_point)
+    """
+    model_start_wrapper = wrap_model(copy.deepcopy(model_start) if deepcopy_model else model_start)
+    model_end_one_wrapper = wrap_model(copy.deepcopy(model_end_one) if deepcopy_model else model_end_one)
+    model_end_two_wrapper = wrap_model(copy.deepcopy(model_end_two) if deepcopy_model else model_end_two)
+
+    # compute direction vectors
+    start_point = model_start_wrapper.get_module_parameters()
+    dir_one = (model_end_one_wrapper.get_module_parameters()) / steps #modified Feb.10, deleted " - start_point"
+    dir_two = (model_end_two_wrapper.get_module_parameters()) / steps #modified Feb.10
+
+    start_point.sub_(dir_one*(steps/2)) #relocate the startpoint such that the origin is at the center of the landscape
+    start_point.sub_(dir_two*(steps/2)) # modified March 8
+
+    data_matrix = []
+    # evaluate loss in grid of (steps * steps) points, where each column signifies one step
+    # along dir_one and each row signifies one step along dir_two. The implementation is again
+    # a little convoluted to avoid constructive operations. Fundamentally we generate the matrix
+    # [[start_point + (dir_one * i) + (dir_two * j) for j in range(steps)] for i in range(steps].
+    for i in range(steps):
+        data_column = []
+
+        for j in range(steps):
+            # for every other column, reverse the order in which the column is generated
+            # so you can easily use in-place operations to move along dir_two
+            if i % 2 == 0:
+                data_column.append(metric(model_start_wrapper)) #modified Feb.10, swapped these two lines
+                start_point.add_(dir_two) #modified Feb.10
+            else:
+                start_point.sub_(dir_two)
+                data_column.insert(0, metric(model_start_wrapper))
+
+        data_matrix.append(data_column)
+        start_point.add_(dir_one)
+
+    return data_matrix
+
 
 # noinspection DuplicatedCode
 def random_plane(model: typing.Union[torch.nn.Module, ModelWrapper], metric: Metric, distance=1, steps=20,
